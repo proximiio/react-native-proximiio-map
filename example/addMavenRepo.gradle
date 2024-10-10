@@ -1,0 +1,7 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://maven.proximi.io/repository/android-releases/"
+        }
+    }
+}

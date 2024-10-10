@@ -1,6 +1,6 @@
 {
   "name": "react-native-proximiio-map",
-  "version": "0.1.0",
+  "version": "0.9.0",
   "description": "Proximi.io Map for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
@@ -51,7 +51,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/proximiio/react-native-proximiio-web.git"
+    "url": "git+https://github.com/proximiio/react-native-proximiio-map.git"
   },
   "author": "Proximi.io DevTeam <support@proximi.io> (https://proximi.io)",
   "license": "MIT",
@@ -181,5 +181,10 @@
   "create-react-native-library": {
     "type": "library",
     "version": "0.41.2"
+  },
+  "dependencies": {
+    "nanoid": "^5.0.7",
+    "react-native-proximiio": "github:proximiio/react-native-proximiio",
+    "react-native-webview": "^13.12.3"
   }
 }

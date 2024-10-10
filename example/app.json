@@ -11,16 +11,44 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "react-native-permissions",
+        {
+          "iosPermissions": [
+            "Bluetooth",
+            "LocationAccuracy",
+            "LocationAlways",
+            "LocationWhenInUse"
+          ]
+        }
+      ]
+    ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "proximiiomap.example"
+      "bundleIdentifier": "proximiiomap.example",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app uses the camera to scan barcodes on event tickets.",
+        "NSBluetoothAlwaysUsageDescription": "Bluetooth is used for positioning",
+        "NSBluetoothPeripheralUsageDescription": "Bluetooth is used for positioning",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Location is used for positioning",
+        "NSLocationWhenInUseUsageDescription": "Location is used for positioning"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "proximiiomap.example"
+      "package": "proximiiomap.example",
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.FOREGROUND_SERVICE_LOCATION",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.POST_NOTIFICATIONS"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
