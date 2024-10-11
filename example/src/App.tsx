@@ -1,11 +1,15 @@
 import {
+  type Amenity,
   type Feature,
   ProximiioMap,
   type Route,
 } from 'react-native-proximiio-map';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import Proximiio, { ProximiioEvents } from 'react-native-proximiio';
+import Proximiio, {
+  ProximiioEvents,
+  type ProximiioFloor,
+} from 'react-native-proximiio';
 import {
   checkMultiple,
   type Permission,
@@ -17,24 +21,20 @@ import Toolbar from './toolbar';
 import Position from './position';
 import { IconRouteFinish, IconRouteStart, IconUserMarker } from './icons';
 import { PermissionList, PlaceCoordinates, ProximiioToken } from './constants';
-
-const log = (msg: string) => {
-  console.log(`${new Date().toISOString()} [Proximi.io] ${msg}`);
-};
-
-// const filter = `function (feature) {
-//   return (
-//     feature.id ===
-//     'cd342cb5-d1ea-42df-a082-312de4af9ba1:c4043623-fa10-481f-8e78-8b726eb1bd05'
-//   );
-// }`;
-//
-// mapView.current?.setFilter(filter);
+import Search from './search';
+import SearchButton from './search-button';
+import { log } from './common';
 
 const style = StyleSheet.create({
-  flex: {
+  flex: { flex: 1 },
+  container: {
+    position: 'absolute',
+    zIndex: 0,
     flex: 1,
+    height: '100%',
+    width: '100%',
   },
+  map: { flex: 2 },
 });
 
 const Icons = {
@@ -46,6 +46,7 @@ const Icons = {
 export default function App() {
   let mapView = useRef<ProximiioMap | null>(null);
   const [floor, setFloor] = useState(Proximiio.floor);
+  const [floors, setFloors] = useState<ProximiioFloor[]>([]);
   const [position, setPosition] = useState(Proximiio.location);
   const [followUser, setFollowUser] = useState(true);
   const [showPosition, setShowPosition] = useState(true);
@@ -55,6 +56,32 @@ export default function App() {
     undefined
   );
   const [distance, setDistance] = useState<number | undefined>(undefined);
+  const [userLevel, setUserLevel] = useState(0);
+  const [mapLevel, setMapLevel] = useState(0);
+  const [levels, setLevels] = useState<number[]>([0]);
+  const [showSearch, setShowSearch] = useState(false);
+  const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [amenity, setAmenity] = useState<Amenity | undefined>(undefined);
+
+  useEffect(() => {
+    log(`Switching Map Level: ${mapLevel}`);
+    mapView?.current?.setLevel(mapLevel);
+  }, [mapLevel]);
+
+  useEffect(() => {
+    log(`Setting UserLevel Level based on positioned Floor: ${userLevel}`);
+    setUserLevel(floor?.level ?? userLevel);
+    if (followUser) {
+      log(`Switching Map level to follow user: ${mapLevel} => ${userLevel}`);
+      setMapLevel(userLevel);
+    }
+  }, [floor, followUser, mapLevel, userLevel]);
+
+  useEffect(() => {
+    const _levels = floors.map((f) => f.level).sort((a, b) => a - b);
+    setLevels(_levels);
+  }, [floors]);
 
   useEffect(() => {
     if (selected) {
@@ -80,14 +107,13 @@ export default function App() {
   useEffect(() => {
     log(`Position Update: ${JSON.stringify(position)}`);
     if (position) {
-      const level = floor?.level ?? 0;
-      mapView.current?.setPosition(position.lat, position.lng, level);
+      mapView.current?.setPosition(position.lat, position.lng, mapLevel);
 
       if (followUser) {
         mapView.current?.panTo(position.lat, position.lng, 150);
       }
     }
-  }, [floor, followUser, position]);
+  }, [floor, followUser, mapLevel, position]);
 
   useEffect(() => {
     const initProximiio = async () => {
@@ -100,7 +126,8 @@ export default function App() {
         }
       });
       await requestMultiple(deniedPermissions);
-
+      log('statuses', statuses);
+      log('denied', deniedPermissions);
       await Proximiio.authorize(ProximiioToken);
       Proximiio.setPdr(true, 4);
       Proximiio.setSnapToRoute(true, 20);
@@ -116,7 +143,10 @@ export default function App() {
       setFloor
     );
 
-    initProximiio().then(() => log('SDK Initialized'));
+    initProximiio().then(async () => {
+      const _floors = await Proximiio.floors();
+      setFloors(_floors);
+    });
 
     return () => {
       floorChange?.remove();
@@ -146,6 +176,7 @@ export default function App() {
     setSelected(undefined);
     setRoutePreview(undefined);
     setDistance(undefined);
+    mapView.current?.cancelFilter();
   }, []);
 
   const onDestinationCenter = useCallback(() => {
@@ -184,44 +215,92 @@ export default function App() {
   }, []);
 
   const onPoiClick = useCallback((feature: Feature) => {
+    setShowSearch(false);
     setSelected(feature);
+
+    const filter = `function (feature) {
+      return feature.id === '${feature.id}';
+    }`;
+
+    mapView.current?.setFilter(filter);
     mapView.current?.flyTo({
       animate: true,
-      zoom: 18,
+      zoom: 17,
       center: feature.geometry.coordinates,
     });
   }, []);
 
+  const onLevelUp = useCallback(() => {
+    const nextLevel = levels.find((l) => l > mapLevel);
+    if (typeof nextLevel !== 'undefined') {
+      setMapLevel(nextLevel);
+    }
+  }, [mapLevel, levels]);
+
+  const onLevelDown = useCallback(() => {
+    const reversed = [...levels].reverse();
+    const nextLevel = reversed.find((l) => l < mapLevel);
+    if (typeof nextLevel !== 'undefined') {
+      setMapLevel(nextLevel);
+    }
+  }, [mapLevel, levels]);
+
   const onReady = useCallback(async () => {
     log(`MapView Initialized`);
-    const pois = await mapView.current!.getFeatures(true);
-    const amenities = await mapView.current!.getAmenities();
-    log(`Amenities: ${amenities.length}`);
-    log(`Pois: ${pois.length}`);
+    // the true attribute specifies only Points filter
+    const _features = await mapView.current!.getFeatures(true);
+    const _amenities = await mapView.current!.getAmenities();
+    _amenities.sort((a, b) =>
+      a.title.toLowerCase().localeCompare(b.title.toLowerCase())
+    );
+    _features.sort((a, b) =>
+      (a.properties.title as string)
+        .toLowerCase()
+        .localeCompare((b.properties.title as string).toLowerCase())
+    );
+    setAmenities(_amenities);
+    setFeatures(_features);
   }, []);
+
+  const onSearchTrigger = useCallback(() => {
+    if (showSearch) {
+      if (amenity) {
+        setAmenity(undefined);
+        return;
+      } else {
+        setShowSearch(false);
+      }
+    } else {
+      setShowSearch(true);
+    }
+  }, [amenity, showSearch]);
 
   const onTouchMove = useCallback(() => setFollowUser(false), []);
 
   return (
     <View style={style.flex}>
-      <ProximiioMap
-        ref={(ref) => (mapView.current = ref)}
-        style={style.flex}
-        token={ProximiioToken}
-        center={PlaceCoordinates}
-        zoom={16}
-        level={0}
-        pitch={0}
-        bearing={0}
-        onClick={onPoiClick}
-        onReady={onReady}
-        onTouchMove={onTouchMove}
-        icons={Icons}
-      />
+      <View style={style.container}>
+        <ProximiioMap
+          ref={(ref) => (mapView.current = ref)}
+          style={style.map}
+          token={ProximiioToken}
+          center={PlaceCoordinates}
+          zoom={16}
+          level={0}
+          pitch={0}
+          bearing={0}
+          onClick={onPoiClick}
+          onReady={onReady}
+          onTouchMove={onTouchMove}
+          icons={Icons}
+        />
+      </View>
 
       {showPosition && <Position position={position} />}
 
       <Toolbar
+        level={mapLevel}
+        levels={levels}
         centerPlace={centerPlace}
         centerUser={centerUser}
         followUser={followUser}
@@ -229,7 +308,11 @@ export default function App() {
         onFollowTrigger={triggerFollow}
         showPosition={showPosition}
         onPositionTrigger={triggerPosition}
+        onLevelUp={onLevelUp}
+        onLevelDown={onLevelDown}
       />
+
+      <SearchButton showSearch={showSearch} onTrigger={onSearchTrigger} />
 
       {selected && (
         <Destination
@@ -241,6 +324,16 @@ export default function App() {
           onCancel={onDestinationCancel}
           onCancelRoute={onCancelRoute}
           onNavigate={onNavigate}
+        />
+      )}
+
+      {showSearch && (
+        <Search
+          amenity={amenity}
+          amenities={amenities}
+          features={features}
+          onAmenitySelect={setAmenity}
+          onFeatureSelect={onPoiClick}
         />
       )}
     </View>

@@ -11,9 +11,12 @@ const style = StyleSheet.create({
     position: 'absolute',
     zIndex: 100,
     top: 0,
-    width: '108%',
+    minHeight: 78,
+    width: '100%',
     backgroundColor: 'rgba(205, 0, 0, 0.9)',
-    padding: 12,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: 'black',
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 12 },
@@ -35,7 +38,9 @@ export default function Position({ position }: Props) {
       const lng = position.lng.toFixed(6);
       const accuracy = position.accuracy?.toFixed(1) ?? 'N/A';
       const source = position.sourceType;
-      setTitle(`${lat} (lat) ${lng} (lng)\naccuracy: ${accuracy} (${source}`);
+      setTitle(
+        `${lat} (lat) ${lng} (lng)\naccuracy: ${accuracy} (${source?.trimEnd()})`
+      );
     } else {
       setTitle('Position not available');
     }

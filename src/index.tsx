@@ -6,6 +6,7 @@ import type {
   ProximiioRouteConfiguration,
 } from '../example/src/types';
 import { nanoid } from 'nanoid/non-secure';
+import { debug } from '../example/src/common';
 
 interface Props {
   style?: StyleProp<ViewStyle>;
@@ -35,7 +36,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b3/index.html ';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
 
 export interface Feature {
   id: string;
@@ -48,6 +49,7 @@ export interface Feature {
 }
 
 export interface Amenity {
+  id?: string;
   title: string;
   icon: string;
   category: string;
@@ -99,65 +101,77 @@ export function metersToSteps(meters: number) {
 export class ProximiioMap extends Component<Props> {
   webview: WebView | null = null;
   callbacks: { [id: string]: (params: never) => void } = {};
+  ready = false;
 
   constructor(props: Props) {
     super(props);
   }
 
   setCenter(lat: number, lng: number) {
-    this.webview?.injectJavaScript(`mapController.setCenter(${lat}, ${lng});`);
+    const js = `mapController.setCenter(${lat}, ${lng});`;
+    this.dispatch(js);
   }
 
   setPosition(lat: number, lng: number, level: number) {
-    this.webview?.injectJavaScript(
-      `mapController.setPosition(${lat}, ${lng}, ${level});`
-    );
+    const js = `mapController.setPosition(${lat}, ${lng}, ${level});`;
+    this.dispatch(js);
+  }
+
+  dispatch(fn: string) {
+    if (!this.ready) {
+      console.log('****blocking dispatch, not ready yet***');
+      return;
+    }
+    debug(`[Dispatch]: ${fn}`);
+    // const js = `window.dispatchEvent(new CustomEvent('bridge', {detail:'${fn}'}));true`;
+    this.webview?.injectJavaScript(fn);
   }
 
   setZoom(zoom: number) {
-    this.webview?.injectJavaScript(`mapController.setZoom(${zoom});`);
+    const js = `mapController.setZoom(${zoom});`;
+    this.dispatch(js);
   }
 
   flyTo(options: FlyToOptions) {
-    this.webview?.injectJavaScript(
-      `mapController.flyTo('${JSON.stringify(options)}');`
-    );
+    const js = `mapController.flyTo('${JSON.stringify(options)}');`;
+    this.dispatch(js);
   }
 
   panTo(lat: number, lng: number, duration: number) {
-    this.webview?.injectJavaScript(
-      `mapController.panTo(${lat}, ${lng}, ${duration});`
-    );
+    const js = `mapController.panTo(${lat}, ${lng}, ${duration});`;
+    this.dispatch(js);
   }
 
   setLevel(level: number) {
-    this.webview?.injectJavaScript(`mapController.setLevel(${level});`);
+    const js = `mapController.setLevel(${level});`;
+    this.dispatch(js);
   }
 
   setFilter(fn: string) {
-    this.webview?.injectJavaScript(`mapController.setFeatureFilter(${fn});`);
+    const js = `mapController.setFeatureFilter(${fn});`;
+    this.dispatch(js);
   }
 
   cancelFilter() {
-    this.webview?.injectJavaScript(`mapController.cancelFeatureFilter();`);
+    const js = `mapController.cancelFeatureFilter();`;
+    this.dispatch(js);
   }
 
   async routeFind(options: ProximiioRouteConfiguration): Promise<Route> {
     const params = JSON.stringify(options);
     const route = await this.asyncTask(Action.routeFind, `'${params}'`);
-
     return route as Route;
   }
 
   async routeStart(options: ProximiioRouteConfiguration): Promise<Route> {
     const params = JSON.stringify(options);
     const route = await this.asyncTask(Action.routeStart, `'${params}'`);
-
     return route as Route;
   }
 
   routeCancel() {
-    this.webview?.injectJavaScript(`mapController.routeCancel();`);
+    const js = `mapController.routeCancel();`;
+    this.dispatch(js);
   }
 
   async getAmenities(): Promise<Amenity[]> {
@@ -167,7 +181,6 @@ export class ProximiioMap extends Component<Props> {
 
   async getFeatures(pointsOnly: boolean = false): Promise<Feature[]> {
     const features = await this.asyncTask(Action.getFeatures, `${pointsOnly}`);
-
     return features as Feature[];
   }
 
@@ -178,16 +191,11 @@ export class ProximiioMap extends Component<Props> {
         resolve(items);
       };
 
-      const js = `(function() {
-        mapController.${fn}(${params}).then((items) => {
-          window.ReactNativeWebView.postMessage(JSON.stringify({
-            event: 'callback',
-            data: { items, requestId: '${requestId}' }
-          }))
-        });
-      })();`;
+      const cmd = `mapController.${fn}(${params})`;
+      const evt = `JSON.stringify({"event":"callback","data":{"items":items,"requestId":"${requestId}"}})`;
+      const js = `(async()=>{const items=await ${cmd};window.ReactNativeWebView.postMessage(${evt});})();true`;
 
-      this.webview?.injectJavaScript(js);
+      this.dispatch(js);
     });
   }
 
@@ -223,6 +231,7 @@ export class ProximiioMap extends Component<Props> {
           this.props.onClick(JSON.parse(event.data as string) as Feature);
         break;
       case Message.READY:
+        this.ready = true;
         if (this.props.onReady) this.props.onReady();
         break;
       case Message.ROUTE_STEP_UPDATE:
@@ -263,14 +272,28 @@ export class ProximiioMap extends Component<Props> {
       },
     };
 
+    const json = JSON.stringify(settings);
+
     return (
       <WebView
         ref={(ref) => (this.webview = ref)}
         source={{ uri }}
         style={this.props.style}
+        webviewDebuggingEnabled={true}
+        useWebView2={true}
+        injectedJavaScriptBeforeContentLoaded={`
+          const settings = ${json};
+          window.token = settings.token;
+          window.mapDefaults = settings.mapDefaults;
+          window.icons = settings.icons;
+          true
+        `}
         injectedJavaScriptObject={settings}
         onError={(evt) => {
           console.log('on mapview error', evt);
+        }}
+        onLoadEnd={() => {
+          console.log('loaded');
         }}
         onMessage={this.onMessage}
       />
