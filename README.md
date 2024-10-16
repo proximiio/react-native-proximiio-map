@@ -2,6 +2,13 @@
 
 Proximi.io Map for React Native
 
+## Changelog
+
+### 0.9.2
+- added image management methods
+- added source management methods
+- added layer management methods
+
 ## Installation
 
 To install Proximi.io Map to React Native Project, run:
@@ -84,6 +91,48 @@ Fires when user taps a POI Feature
 Fires when map has finished loading
 
 ### Methods
+
+#### mapView.current?.addImage(id: string, uri: string)
+Add an image to the style. This image can be displayed on the map like any other icon in the style's sprite using the image's ID with icon-image, background-pattern, fill-pattern, or line-pattern.
+
+Use base64 encoded image as uri parameter
+
+#### mapView.current?.hasImage(id: string)
+Check whether or not an image with a specific ID exists in the style. This checks both images in the style's original sprite and any images that have been added at runtime using Map#addImage.
+
+#### mapView.current?.removeImage(id: string)
+Remove an image from a style. This can be an image from the style's original sprite or any images that have been added at runtime using Map#addImage.
+
+#### mapView.current?.addSource(id: string, source: SourceSpecification)
+Adds a source to the map's style.
+
+#### mapView.current?.getSource(id: string)
+Returns the source with the specified ID in the map's style.
+
+#### mapView.current?.hasSource(id: string)
+Check whether or not source exists in style.
+
+#### mapView.current?.removeSource(id: string)
+Removes a source from the map's style.
+
+#### mapView.current?.addLayer(layer: never)
+Adds a MapLibre style layer to the map's style.
+
+A layer defines how data from a specified source will be styled. Read more about layer types and available paint and layout properties in the MapLibre Style Specification.
+
+#### mapView.current?.getLayer(id: string)
+Returns the layer with the specified ID in the map's style.
+
+#### mapView.current?.hasLayer(id: string)
+Checks whether or not layer exists in style.
+
+#### mapView.current?.moveLayer(id: string, beforeId: string)
+Moves a layer to a different z-position.
+
+beforeId is ID of an existing layer to insert the new layer before. When viewing the map, the id layer will appear beneath the beforeId layer.
+
+#### mapView.current?.removeLayer(id: string)
+Removes the layer with the given ID from the map's style.
 
 #### mapView.current?.setCenter(lat: number, lng: number)
 Sets the map's geographical centerpoint.

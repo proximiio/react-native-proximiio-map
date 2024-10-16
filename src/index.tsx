@@ -286,7 +286,7 @@ export class ProximiioMap extends Component<Props> {
     const result = await this.asyncTask(Action.removeLayer, `'${id}'`);
     return result as boolean;
   }
-  
+
   setCenter(lat: number, lng: number) {
     this.dispatch(`mapController.setCenter(${lat}, ${lng});`);
   }
