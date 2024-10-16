@@ -35,9 +35,8 @@ interface Props {
   };
 }
 
-// const uri =
-//   'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
-const uri = 'http://localhost:5173/';
+const uri =
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
 
 export interface Feature {
   id: string;
