@@ -36,7 +36,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b17/index.html';
 
 export interface Feature {
   id: string;
@@ -93,6 +93,9 @@ enum Action {
   getFeatures = 'getFeatures',
   routeFind = 'routeFind',
   routeStart = 'routeStart',
+  addImage = 'addImage',
+  hasImage = 'hasImage',
+  removeImage = 'removeImage',
 }
 
 export function metersToSteps(meters: number) {
@@ -103,6 +106,22 @@ export class ProximiioMap extends Component<Props> {
   webview: WebView | null = null;
   callbacks: { [id: string]: (params: never) => void } = {};
   ready = false;
+
+  async addImage(id: string, _uri: string): Promise<boolean> {
+    const params = `'${id}', '${_uri}'`;
+    const result = await this.asyncTask(Action.addImage, params);
+    return result as boolean;
+  }
+
+  async hasImage(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.hasImage, `'${id}'`);
+    return result as boolean;
+  }
+
+  async removeImage(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.removeImage, `'${id}'`);
+    return result as boolean;
+  }
 
   setCenter(lat: number, lng: number) {
     this.dispatch(`mapController.setCenter(${lat}, ${lng});`);
