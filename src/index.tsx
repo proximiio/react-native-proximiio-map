@@ -36,7 +36,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b18/index.html';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b19/index.html';
 
 export interface Feature {
   id: string;
@@ -100,6 +100,11 @@ enum Action {
   getSource = 'getSource',
   hasSource = 'hasSource',
   removeSource = 'removeSource',
+  addLayer = 'addLayer',
+  getLayer = 'getLayer',
+  hasLayer = 'hasLayer',
+  moveLayer = 'moveLayer',
+  removeLayer = 'removeLayer',
 }
 
 export type PromoteIdSpecification =
@@ -253,6 +258,35 @@ export class ProximiioMap extends Component<Props> {
     return result as boolean;
   }
 
+  async addLayer(layer: never): Promise<boolean> {
+    const params = `'${JSON.stringify(layer)}'`;
+    const result = await this.asyncTask(Action.addLayer, params);
+    return result as boolean;
+  }
+
+  async getLayer(id: string): Promise<SourceInfo | undefined> {
+    const result = await this.asyncTask(Action.getLayer, `'${id}'`);
+    return result as SourceInfo | undefined;
+  }
+
+  async hasLayer(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.hasLayer, `'${id}'`);
+    return result as boolean;
+  }
+
+  async moveLayer(id: string, beforeId: string): Promise<boolean> {
+    const result = await this.asyncTask(
+      Action.moveLayer,
+      `'${id}', '${beforeId}'`
+    );
+    return result as boolean;
+  }
+
+  async removeLayer(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.removeLayer, `'${id}'`);
+    return result as boolean;
+  }
+  
   setCenter(lat: number, lng: number) {
     this.dispatch(`mapController.setCenter(${lat}, ${lng});`);
   }
