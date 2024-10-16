@@ -1,6 +1,6 @@
 import type { ProximiioLocation } from 'react-native-proximiio';
 import Button from './button';
-import { White90 } from './common';
+import { White90 } from '../common';
 import CircleButton from './circle-button';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { useEffect, useState } from 'react';
@@ -74,7 +74,7 @@ export default function Toolbar({
           size={48}
         >
           <Image
-            source={require('./assets/arrow-down.png')}
+            source={require('../assets/arrow-down.png')}
             style={style.icon}
           />
         </CircleButton>
@@ -97,7 +97,10 @@ export default function Toolbar({
           disabled={!canLevelUp}
           size={48}
         >
-          <Image source={require('./assets/arrow-up.png')} style={style.icon} />
+          <Image
+            source={require('../assets/arrow-up.png')}
+            style={style.icon}
+          />
         </CircleButton>
       </View>
 

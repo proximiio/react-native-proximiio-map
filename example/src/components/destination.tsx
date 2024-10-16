@@ -4,7 +4,8 @@ import {
   metersToSteps,
   type Route,
 } from 'react-native-proximiio-map';
-import { White90 } from './common';
+import { White90 } from '../common';
+import { useEffect, useState } from 'react';
 
 interface Props {
   route?: Route;
@@ -40,8 +41,14 @@ const style = StyleSheet.create({
   subtitle: {
     textAlign: 'center',
     paddingHorizontal: 12,
-    paddingBottom: 0,
+    paddingBottom: 12,
     fontSize: 14,
+  },
+  instruction: {
+    textAlign: 'center',
+    paddingHorizontal: 12,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   cancelButton: {
     backgroundColor: '#d3d3d3',
@@ -111,6 +118,18 @@ export default function ({
   onCenter,
   onNavigate,
 }: Props) {
+  const [instruction, setInstruction] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    if (route) {
+      if (route.steps.length > 1) {
+        setInstruction(route.steps[1]?.instruction);
+      }
+    } else {
+      setInstruction(undefined);
+    }
+  }, [route]);
+
   return (
     <View style={style.container}>
       <Text style={style.title}>
@@ -122,6 +141,8 @@ export default function ({
           {distance.toFixed(0)} meters {metersToSteps(distance)} steps
         </Text>
       )}
+
+      {route && <Text style={style.instruction}>{instruction}</Text>}
 
       <View style={style.footer}>
         {!route && (

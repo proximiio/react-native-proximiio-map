@@ -16,14 +16,14 @@ import {
   requestMultiple,
 } from 'react-native-permissions';
 
-import Destination from './destination';
-import Toolbar from './toolbar';
-import Position from './position';
-import { IconRouteFinish, IconRouteStart, IconUserMarker } from './icons';
+import Destination from './components/destination';
+import Toolbar from './components/toolbar';
+import Position from './components/position';
 import { PermissionList, PlaceCoordinates, ProximiioToken } from './constants';
-import Search from './search';
-import SearchButton from './search-button';
+import Search from './components/search';
+import SearchButton from './components/search-button';
 import { log } from './common';
+import { Icons } from './icons';
 
 const style = StyleSheet.create({
   flex: { flex: 1 },
@@ -36,12 +36,6 @@ const style = StyleSheet.create({
   },
   map: { flex: 2 },
 });
-
-const Icons = {
-  route_start: IconRouteStart,
-  route_finish: IconRouteFinish,
-  user_marker: IconUserMarker,
-};
 
 export default function App() {
   let mapView = useRef<ProximiioMap | null>(null);
@@ -87,7 +81,7 @@ export default function App() {
     if (selected) {
       log(`POI: ${selected?.id} / ${selected?.properties.title}`);
 
-      if (position && selected) {
+      if (position && selected && !route) {
         const findRoute = async () => {
           const level = floor?.level ?? 0;
           const _route = await mapView.current?.routeFind({
@@ -102,7 +96,7 @@ export default function App() {
         void findRoute();
       }
     }
-  }, [floor?.level, position, selected]);
+  }, [floor?.level, position, route, selected]);
 
   useEffect(() => {
     log(`Position Update: ${JSON.stringify(position)}`);

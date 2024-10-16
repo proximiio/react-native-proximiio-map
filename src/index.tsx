@@ -35,8 +35,9 @@ interface Props {
   };
 }
 
-const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
+// const uri =
+//   'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
+const uri = 'http://localhost:5173/';
 
 export interface Feature {
   id: string;
@@ -61,6 +62,7 @@ export interface RouteStep {
   direction: string;
   distanceFromLastStep: number;
   level: number;
+  instruction: string;
   coordinates: {
     coordinates: [number, number];
   };
@@ -103,58 +105,36 @@ export class ProximiioMap extends Component<Props> {
   callbacks: { [id: string]: (params: never) => void } = {};
   ready = false;
 
-  constructor(props: Props) {
-    super(props);
-  }
-
   setCenter(lat: number, lng: number) {
-    const js = `mapController.setCenter(${lat}, ${lng});`;
-    this.dispatch(js);
+    this.dispatch(`mapController.setCenter(${lat}, ${lng});`);
   }
 
   setPosition(lat: number, lng: number, level: number) {
-    const js = `mapController.setPosition(${lat}, ${lng}, ${level});`;
-    this.dispatch(js);
-  }
-
-  dispatch(fn: string) {
-    if (!this.ready) {
-      console.log('****blocking dispatch, not ready yet***');
-      return;
-    }
-    debug(`[Dispatch]: ${fn}`);
-    // const js = `window.dispatchEvent(new CustomEvent('bridge', {detail:'${fn}'}));true`;
-    this.webview?.injectJavaScript(fn);
+    this.dispatch(`mapController.setPosition(${lat}, ${lng}, ${level});`);
   }
 
   setZoom(zoom: number) {
-    const js = `mapController.setZoom(${zoom});`;
-    this.dispatch(js);
+    this.dispatch(`mapController.setZoom(${zoom});`);
   }
 
   flyTo(options: FlyToOptions) {
-    const js = `mapController.flyTo('${JSON.stringify(options)}');`;
-    this.dispatch(js);
+    this.dispatch(`mapController.flyTo('${JSON.stringify(options)}');`);
   }
 
   panTo(lat: number, lng: number, duration: number) {
-    const js = `mapController.panTo(${lat}, ${lng}, ${duration});`;
-    this.dispatch(js);
+    this.dispatch(`mapController.panTo(${lat}, ${lng}, ${duration});`);
   }
 
   setLevel(level: number) {
-    const js = `mapController.setLevel(${level});`;
-    this.dispatch(js);
+    this.dispatch(`mapController.setLevel(${level});`);
   }
 
   setFilter(fn: string) {
-    const js = `mapController.setFeatureFilter(${fn});`;
-    this.dispatch(js);
+    this.dispatch(`mapController.setFeatureFilter(${fn});`);
   }
 
   cancelFilter() {
-    const js = `mapController.cancelFeatureFilter();`;
-    this.dispatch(js);
+    this.dispatch(`mapController.cancelFeatureFilter();`);
   }
 
   async routeFind(options: ProximiioRouteConfiguration): Promise<Route> {
@@ -170,8 +150,7 @@ export class ProximiioMap extends Component<Props> {
   }
 
   routeCancel() {
-    const js = `mapController.routeCancel();`;
-    this.dispatch(js);
+    this.dispatch(`mapController.routeCancel();`);
   }
 
   async getAmenities(): Promise<Amenity[]> {
@@ -182,6 +161,15 @@ export class ProximiioMap extends Component<Props> {
   async getFeatures(pointsOnly: boolean = false): Promise<Feature[]> {
     const features = await this.asyncTask(Action.getFeatures, `${pointsOnly}`);
     return features as Feature[];
+  }
+
+  private dispatch(fn: string) {
+    if (!this.ready) {
+      console.log('**** Dispatch Blocked, WebView not ready yet ***');
+      return;
+    }
+    debug(`[Dispatch]: ${fn}`);
+    this.webview?.injectJavaScript(fn);
   }
 
   private asyncTask(fn: string, params: string): Promise<unknown> {
@@ -290,10 +278,7 @@ export class ProximiioMap extends Component<Props> {
         `}
         injectedJavaScriptObject={settings}
         onError={(evt) => {
-          console.log('on mapview error', evt);
-        }}
-        onLoadEnd={() => {
-          console.log('loaded');
+          console.error('on mapview error', evt);
         }}
         onMessage={this.onMessage}
       />

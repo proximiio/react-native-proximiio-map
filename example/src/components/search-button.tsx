@@ -33,13 +33,13 @@ export default function SearchButton({ showSearch, onTrigger }: Props) {
       >
         {!showSearch && (
           <Image
-            source={require('./assets/menu-black.png')}
+            source={require('../assets/menu-black.png')}
             style={style.menuIcon}
           />
         )}
         {showSearch && (
           <Image
-            source={require('./assets/arrow-left.png')}
+            source={require('../assets/arrow-left.png')}
             style={style.arrowIcon}
           />
         )}

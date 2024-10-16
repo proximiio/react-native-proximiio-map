@@ -35,7 +35,7 @@ export default function AmenityItem({
       <Text style={style.title}>{amenity.title}</Text>
       <Badge>{featureCount}</Badge>
       <Image
-        source={require('./assets/chevron-right.png')}
+        source={require('../assets/chevron-right.png')}
         style={style.chevron}
       />
     </TouchableOpacity>
