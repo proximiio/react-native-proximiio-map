@@ -36,7 +36,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b16/index.html';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b19/index.html';
 
 export interface Feature {
   id: string;
@@ -93,7 +93,124 @@ enum Action {
   getFeatures = 'getFeatures',
   routeFind = 'routeFind',
   routeStart = 'routeStart',
+  addImage = 'addImage',
+  hasImage = 'hasImage',
+  removeImage = 'removeImage',
+  addSource = 'addSource',
+  getSource = 'getSource',
+  hasSource = 'hasSource',
+  removeSource = 'removeSource',
+  addLayer = 'addLayer',
+  getLayer = 'getLayer',
+  hasLayer = 'hasLayer',
+  moveLayer = 'moveLayer',
+  removeLayer = 'removeLayer',
 }
+
+export type PromoteIdSpecification =
+  | {
+      [_: string]: string;
+    }
+  | string;
+
+export type VectorSourceSpecification = {
+  type: 'vector';
+  url?: string;
+  tiles?: Array<string>;
+  bounds?: [number, number, number, number];
+  scheme?: 'xyz' | 'tms';
+  minzoom?: number;
+  maxzoom?: number;
+  attribution?: string;
+  promoteId?: PromoteIdSpecification;
+  volatile?: boolean;
+};
+
+export type RasterSourceSpecification = {
+  type: 'raster';
+  url?: string;
+  tiles?: Array<string>;
+  bounds?: [number, number, number, number];
+  minzoom?: number;
+  maxzoom?: number;
+  tileSize?: number;
+  scheme?: 'xyz' | 'tms';
+  attribution?: string;
+  volatile?: boolean;
+};
+
+export type RasterDEMSourceSpecification = {
+  type: 'raster-dem';
+  url?: string;
+  tiles?: Array<string>;
+  bounds?: [number, number, number, number];
+  minzoom?: number;
+  maxzoom?: number;
+  tileSize?: number;
+  attribution?: string;
+  encoding?: 'terrarium' | 'mapbox' | 'custom';
+  redFactor?: number;
+  blueFactor?: number;
+  greenFactor?: number;
+  baseShift?: number;
+  volatile?: boolean;
+};
+
+export type GeoJSONSourceSpecification = {
+  type: 'geojson';
+  data: GeoJSON.GeoJSON | string;
+  maxzoom?: number;
+  attribution?: string;
+  buffer?: number;
+  filter?: unknown;
+  tolerance?: number;
+  cluster?: boolean;
+  clusterRadius?: number;
+  clusterMaxZoom?: number;
+  clusterMinPoints?: number;
+  clusterProperties?: unknown;
+  lineMetrics?: boolean;
+  generateId?: boolean;
+  promoteId?: PromoteIdSpecification;
+};
+
+export type VideoSourceSpecification = {
+  type: 'video';
+  urls: Array<string>;
+  coordinates: [
+    [number, number],
+    [number, number],
+    [number, number],
+    [number, number],
+  ];
+};
+
+export type ImageSourceSpecification = {
+  type: 'image';
+  url: string;
+  coordinates: [
+    [number, number],
+    [number, number],
+    [number, number],
+    [number, number],
+  ];
+};
+
+export type SourceSpecification =
+  | VectorSourceSpecification
+  | RasterSourceSpecification
+  | RasterDEMSourceSpecification
+  | GeoJSONSourceSpecification
+  | VideoSourceSpecification
+  | ImageSourceSpecification;
+
+export type SourceInfo = {
+  id?: string;
+  type?: 'geojson' | 'vector' | 'raster' | 'raster-dem' | 'video' | 'image';
+  minzoom?: number;
+  maxzoom?: number;
+  loaded: boolean;
+};
 
 export function metersToSteps(meters: number) {
   return Math.round(meters * 1.31234);
@@ -103,6 +220,72 @@ export class ProximiioMap extends Component<Props> {
   webview: WebView | null = null;
   callbacks: { [id: string]: (params: never) => void } = {};
   ready = false;
+
+  async addImage(id: string, _uri: string): Promise<boolean> {
+    const params = `'${id}', '${_uri}'`;
+    const result = await this.asyncTask(Action.addImage, params);
+    return result as boolean;
+  }
+
+  async hasImage(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.hasImage, `'${id}'`);
+    return result as boolean;
+  }
+
+  async removeImage(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.removeImage, `'${id}'`);
+    return result as boolean;
+  }
+
+  async addSource(id: string, source: SourceSpecification): Promise<boolean> {
+    const params = `'${id}', '${JSON.stringify(source)}'`;
+    const result = await this.asyncTask(Action.addSource, params);
+    return result as boolean;
+  }
+
+  async getSource(id: string): Promise<SourceInfo | undefined> {
+    const result = await this.asyncTask(Action.getSource, `'${id}'`);
+    return result as SourceInfo | undefined;
+  }
+
+  async hasSource(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.hasSource, `'${id}'`);
+    return result as boolean;
+  }
+
+  async removeSource(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.removeSource, `'${id}'`);
+    return result as boolean;
+  }
+
+  async addLayer(layer: never): Promise<boolean> {
+    const params = `'${JSON.stringify(layer)}'`;
+    const result = await this.asyncTask(Action.addLayer, params);
+    return result as boolean;
+  }
+
+  async getLayer(id: string): Promise<SourceInfo | undefined> {
+    const result = await this.asyncTask(Action.getLayer, `'${id}'`);
+    return result as SourceInfo | undefined;
+  }
+
+  async hasLayer(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.hasLayer, `'${id}'`);
+    return result as boolean;
+  }
+
+  async moveLayer(id: string, beforeId: string): Promise<boolean> {
+    const result = await this.asyncTask(
+      Action.moveLayer,
+      `'${id}', '${beforeId}'`
+    );
+    return result as boolean;
+  }
+
+  async removeLayer(id: string): Promise<boolean> {
+    const result = await this.asyncTask(Action.removeLayer, `'${id}'`);
+    return result as boolean;
+  }
 
   setCenter(lat: number, lng: number) {
     this.dispatch(`mapController.setCenter(${lat}, ${lng});`);
