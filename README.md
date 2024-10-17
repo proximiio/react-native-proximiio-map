@@ -4,6 +4,9 @@ Proximi.io Map for React Native
 
 ## Changelog
 
+### 0.9.3
+- included lib folder
+
 ### 0.9.2
 - added image management methods
 - added source management methods
