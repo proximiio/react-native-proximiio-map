@@ -4,6 +4,9 @@ Proximi.io Map for React Native
 
 ## Changelog
 
+### 0.9.4
+- fixed imports
+
 ### 0.9.3
 - included lib folder
 

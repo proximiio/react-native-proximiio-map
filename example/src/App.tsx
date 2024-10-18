@@ -1,6 +1,7 @@
 import {
   type Amenity,
   type Feature,
+  log,
   ProximiioMap,
   type Route,
 } from 'react-native-proximiio-map';
@@ -22,7 +23,6 @@ import Position from './components/position';
 import { PermissionList, PlaceCoordinates, ProximiioToken } from './constants';
 import Search from './components/search';
 import SearchButton from './components/search-button';
-import { log } from './common';
 import { Icons } from './icons';
 
 const style = StyleSheet.create({

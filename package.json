@@ -1,6 +1,6 @@
 {
   "name": "react-native-proximiio-map",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "Proximi.io Map for React Native",
   "source": "./src/index.tsx",
   "main": "./lib/commonjs/index.js",
