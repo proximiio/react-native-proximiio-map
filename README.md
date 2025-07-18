@@ -109,6 +109,23 @@ Check whether or not an image with a specific ID exists in the style. This check
 #### mapView.current?.removeImage(id: string)
 Remove an image from a style. This can be an image from the style's original sprite or any images that have been added at runtime using Map#addImage.
 
+#### mapView.current?.addFeature(feature: GeoJSON)
+Add a feature to the data set.
+
+#### mapView.current?.updateFeature(feature: GeoJSON)
+Updates a feature that is already present in the data set.
+
+#### mapView.current?.deleteFeature(feature: GeoJSON)
+Deletes a feature from the data set.
+
+Use base64 encoded image as uri parameter
+
+#### mapView.current?.hasImage(id: string)
+Check whether or not an image with a specific ID exists in the style. This checks both images in the style's original sprite and any images that have been added at runtime using Map#addImage.
+
+#### mapView.current?.removeImage(id: string)
+Remove an image from a style. This can be an image from the style's original sprite or any images that have been added at runtime using Map#addImage.
+
 #### mapView.current?.addSource(id: string, source: SourceSpecification)
 Adds a source to the map's style.
 
