@@ -64,11 +64,14 @@ export default function App() {
   }, [mapLevel]);
 
   useEffect(() => {
-    log(`Setting UserLevel Level based on positioned Floor: ${userLevel}`);
+    log(`Switching Floor: ${JSON.stringify(floor, null, 2)}`);
+    log(
+      `Setting UserLevel Level based on positioned Floor: ${userLevel} -> ${floor?.level ?? userLevel}`
+    );
     setUserLevel(floor?.level ?? userLevel);
     if (followUser) {
-      log(`Switching Map level to follow user: ${mapLevel} => ${userLevel}`);
-      setMapLevel(userLevel);
+      log(`Switching Map level to follow user: ${mapLevel} => ${floor?.level}`);
+      setMapLevel(floor?.level ?? 0);
     }
   }, [floor, followUser, mapLevel, userLevel]);
 
@@ -101,13 +104,16 @@ export default function App() {
   useEffect(() => {
     log(`Position Update: ${JSON.stringify(position)}`);
     if (position) {
-      mapView.current?.setPosition(position.lat, position.lng, mapLevel);
+      mapView.current?.setPosition(position.lat, position.lng, userLevel);
 
       if (followUser) {
         mapView.current?.panTo(position.lat, position.lng, 150);
+        if (userLevel !== mapLevel) {
+          mapView.current?.setLevel(userLevel);
+        }
       }
     }
-  }, [floor, followUser, mapLevel, position]);
+  }, [floor, followUser, userLevel, position, mapLevel]);
 
   useEffect(() => {
     const initProximiio = async () => {
@@ -122,6 +128,7 @@ export default function App() {
       await requestMultiple(deniedPermissions);
       log('statuses', statuses);
       log('denied', deniedPermissions);
+      Proximiio.requestPermissions(true);
       await Proximiio.authorize(ProximiioToken);
       Proximiio.setPdr(true, 4);
       Proximiio.setSnapToRoute(true, 20);
@@ -200,8 +207,11 @@ export default function App() {
   const centerUser = useCallback(() => {
     if (position) {
       mapView.current?.panTo(position.lat, position.lng, 300);
+      if (userLevel !== mapLevel) {
+        setMapLevel(userLevel);
+      }
     }
-  }, [position]);
+  }, [position, userLevel, mapLevel]);
 
   const centerPlace = useCallback(() => {
     setFollowUser(false);

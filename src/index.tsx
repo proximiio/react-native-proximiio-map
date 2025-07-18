@@ -3,6 +3,7 @@ import { type StyleProp, type ViewStyle } from 'react-native';
 import { Component } from 'react';
 
 import { nanoid } from 'nanoid/non-secure';
+import type { GeoJSON } from 'geojson';
 
 export type ProximiioRouteConfiguration = {
   startFeatureId?: string;
@@ -109,7 +110,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b22/index.html';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b45/index.html';
 
 export interface Feature {
   id: string;
@@ -178,6 +179,9 @@ enum Action {
   hasLayer = 'hasLayer',
   moveLayer = 'moveLayer',
   removeLayer = 'removeLayer',
+  addFeature = 'addFeature',
+  updateFeature = 'updateFeature',
+  deleteFeature = 'deleteFeature',
 }
 
 export type PromoteIdSpecification =
@@ -307,6 +311,24 @@ export class ProximiioMap extends Component<Props> {
 
   async removeImage(id: string): Promise<boolean> {
     const result = await this.asyncTask(Action.removeImage, `'${id}'`);
+    return result as boolean;
+  }
+
+  async addFeature(feature: GeoJSON): Promise<boolean> {
+    const params = `'${JSON.stringify(feature)}'`;
+    const result = await this.asyncTask(Action.addFeature, params);
+    return result as boolean;
+  }
+
+  async updateFeature(feature: GeoJSON): Promise<boolean> {
+    const params = `'${JSON.stringify(feature)}'`;
+    const result = await this.asyncTask(Action.updateFeature, params);
+    return result as boolean;
+  }
+
+  async deleteFeature(feature: GeoJSON): Promise<boolean> {
+    const params = `'${JSON.stringify(feature)}'`;
+    const result = await this.asyncTask(Action.deleteFeature, params);
     return result as boolean;
   }
 
