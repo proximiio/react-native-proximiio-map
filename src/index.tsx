@@ -110,7 +110,7 @@ interface Props {
 }
 
 const uri =
-  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b45/index.html';
+  'https://proximiio-map-mobile.ams3.cdn.digitaloceanspaces.com/1.0.0-b46/index.html';
 
 export interface Feature {
   id: string;
