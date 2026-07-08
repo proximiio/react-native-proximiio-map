@@ -2,7 +2,16 @@
 
 Proximi.io Map for React Native
 
+## Compatibility
+
+- React 18 and React 19
+- react-native-webview `^13.12.3` (including 13.13+ — typing change in the WebView generic is handled since 0.9.6)
+- Android positioning fixes require react-native-proximiio 5.3.5+
+
 ## Changelog
+
+### 0.9.6
+- fixed TypeScript build error with react-native-webview 13.13+ (`WebView<P = {}>` changed to `WebView<P = undefined>`), the webview ref is now typed as `ComponentRef<typeof WebView>` and works with both older and newer webview versions
 
 ### 0.9.4
 - fixed imports
