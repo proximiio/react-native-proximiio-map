@@ -1,6 +1,6 @@
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { type StyleProp, type ViewStyle } from 'react-native';
-import { Component } from 'react';
+import { Component, type ComponentRef } from 'react';
 
 import { nanoid } from 'nanoid/non-secure';
 import type { GeoJSON } from 'geojson';
@@ -294,7 +294,7 @@ export function metersToSteps(meters: number) {
 }
 
 export class ProximiioMap extends Component<Props> {
-  webview: WebView | null = null;
+  webview: ComponentRef<typeof WebView> | null = null;
   callbacks: { [id: string]: (params: never) => void } = {};
   ready = false;
 
