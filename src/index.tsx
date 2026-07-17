@@ -541,7 +541,9 @@ export class ProximiioMap extends Component<Props> {
 
     return (
       <WebView
-        ref={(ref) => (this.webview = ref)}
+        ref={(ref) => {
+          this.webview = ref as unknown as ComponentRef<typeof WebView> | null;
+        }}
         source={{ uri }}
         style={this.props.style}
         webviewDebuggingEnabled={true}

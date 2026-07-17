@@ -1,6 +1,6 @@
 import { WebView } from 'react-native-webview';
 import { type StyleProp, type ViewStyle } from 'react-native';
-import { Component } from 'react';
+import { Component, type ComponentRef } from 'react';
 import type { GeoJSON } from 'geojson';
 export type ProximiioRouteConfiguration = {
     startFeatureId?: string;
@@ -233,7 +233,7 @@ export type SourceInfo = {
 };
 export declare function metersToSteps(meters: number): number;
 export declare class ProximiioMap extends Component<Props> {
-    webview: WebView | null;
+    webview: ComponentRef<typeof WebView> | null;
     callbacks: {
         [id: string]: (params: never) => void;
     };
@@ -270,7 +270,7 @@ export declare class ProximiioMap extends Component<Props> {
     private asyncTask;
     private onCallback;
     private onMessage;
-    render(): import("react/jsx-runtime").JSX.Element;
+    render(): import("react").JSX.Element;
 }
 export {};
 //# sourceMappingURL=index.d.ts.map
